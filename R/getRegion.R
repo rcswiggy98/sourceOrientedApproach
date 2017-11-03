@@ -1,5 +1,20 @@
+#' Get US Region from state
+#'
+#' Returns the United States Region given the two letter state abbreviation
+#'
+#' @param inputParameter1 A description of the input parameter \code{inputParameter1}
+#' @param inputParameter2 A description of the input parameter \code{inputParameter2}
+#'
+#' @return output A description of the object the function outputs
+#'
+#' @keywords keywords
+#'
+#' @export
+#'
+#' @examples
+#' getRegion("NY")
 
-getRegion <- function(states){
+getRegion <- function(state){
   Northeast = c("ME", "NH", "VT", "NY", "PA", "DE", "NJ", "MD", "DC", "VA", "MA", "CT", "RI")
   IndustrialMidwest = c("WV", "OH", "KY", "IN", "IL", "WI", "MI")
   Southeast = c("FL", "GA", "SC", "NC", "TN", "AL", "MS", "AR","LA")
