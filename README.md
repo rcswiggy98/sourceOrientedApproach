@@ -39,3 +39,4 @@ dataset <- inmap2005[ihd2005,][covariates,]
 ```
 ## Analyzing a data set
 
+...to be continued.
