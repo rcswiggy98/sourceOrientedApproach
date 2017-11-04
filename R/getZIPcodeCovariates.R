@@ -1,19 +1,16 @@
 #' Get US ZIP Code Covariates
 #'
-#' Return a data table consisting of CENSUS 2000 variables, smoking rates,
-#' and weather variables for every US ZIP code
+#' Returns a data table consisting of CENSUS 2000 variables, smoking rates,
+#' and weather variables for every US ZIP code.  The census variables include
+#' various demographic and socioeconomic characteristics.  Smoking rates
+#' are from XX.  Weather variables are the average temperature and relative
+#' humidity from XX
 #'
-#' @param inputParameter1 A description of the input parameter \code{inputParameter1}
-#' @param inputParameter2 A description of the input parameter \code{inputParameter2}
 #'
-#' @return output A description of the object the function outputs
-#'
-#' @keywords keywords
-#'
-#' @export
+#' @return output A data.table of ZIP code level population charateristics.
 #'
 #' @examples
-#' R code here showing how your function works
+#' covariates <- getZIPcodeCovariates()
 
 getZIPcodeCovariates <- function(){
 
