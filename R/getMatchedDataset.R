@@ -1,4 +1,4 @@
-#' A one sentence description of what your function does
+#' Returns a propensity score matched dataset for
 #'
 #' A more detailed description of what the function is and how
 #' it works. It may be a paragraph that should not be separated
@@ -16,8 +16,11 @@
 #' @examples
 #' R code here showing how your function works
 
-getMatchedDataset <- function(dataset, regions, covariates, exact.vars = NA,
-                              exposure.cutoff = 4, caliper = "default"){
+getMatchedDataset <- function(dataset, regions = "all", covariate.vars = "all",
+                              exposure.var = "PM25inMAP", exact.vars = NA,
+                              exposure.cutoff.percentile = 80, caliper = "default"){
+
+  #THIS FUNCTION NEEDS WORK!!
 
   require(data.table)
   require(MatchIt)
