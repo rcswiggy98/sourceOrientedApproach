@@ -1,20 +1,17 @@
 #' Simulated MEDICARE outcome data
 #'
-#' A more detailed description of what the function is and how
-#' it works. It may be a paragraph that should not be separated
-#' by any spaces.
+#' This function returns a data table containing simulated
+#' MEDICARE data aggregated to the ZIP code level.  IHD is the number
+#' of ischemic heart disease hospitalizations in 2005 and person_years
+#' is the number of observed person years.
 #'
 #' @param inputParameter1 A description of the input parameter \code{inputParameter1}
 #' @param inputParameter2 A description of the input parameter \code{inputParameter2}
 #'
-#' @return output A description of the object the function outputs
-#'
-#' @keywords keywords
-#'
-#' @export
+#' @return output A data table containing ZIP code level IHD hospitalizations and person-years
 #'
 #' @examples
-#' R code here showing how your function works
+#' outcome <- getZIPcodeOutcomes()
 
 getZIPcodeOutcomes <- function(outcome = "IHD"){
 
