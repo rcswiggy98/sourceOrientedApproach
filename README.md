@@ -34,7 +34,7 @@ Covariates: covariates contains a data table of potential confounders of the IHD
 ### Perform propensity score matching to adjust for potential confounders
 ```
 # Covariates to adjust for using propensity score matching
-covariate.vars <- c("logPop", "PctUrban", "PctBlack","PctHisp", "PctHighSchool","MedianHHInc", 
-"PctPoor", "PctFemale", "PctOccupied", "PctMovedIn5","smokerate2000")
+covariate.vars <- c("logPop", "PctUrban","MedianHHInc", "PctPoor", "smokerate2000")
+
 # dataset <- getMatchedDataset(exposure, covariates, covariate.vars)
 ```
