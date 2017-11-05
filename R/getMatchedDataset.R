@@ -27,14 +27,18 @@
 #' @param caliper A numeric value specifying the maximum allowable difference
 #' in propensity scores when performing matching.
 #'
-#' @return output A description of the object the function outputs
+#' @return output A list containing the raw dataset, the matched dataset,
+#' a matchitobject, the caliper, and the high/control cutoff.
 #'
 #' @keywords keywords
 #'
 #' @export
 #'
 #' @examples
-#' R code here showing how your function works
+#' data('covariates')
+#' data('inmap2005')
+#' covariate.vars <- c("logPop", "PctUrban", "PctBlack","MedianHHInc","smokerate2000")
+#' dataset <- getMatchedDataset(exposure, covariates, covariate.vars)
 
 getMatchedDataset <- function(exposure, covariates, covariate.vars, regions = "all",
                               exact.vars = NULL, exposure.cutoff.percentile = 0.80, caliper = "default"){
