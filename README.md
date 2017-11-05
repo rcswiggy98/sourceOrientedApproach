@@ -39,4 +39,9 @@ dataset <- inmap2005[ihd2005,][covariates,]
 ```
 ## Analyzing a data set
 
-...to be continued.
+```
+covariate.vars <- c("logPop", "PctUrban", "PctBlack","PctHisp", 
+                    "PctHighSchool","MedianHHInc", "PctPoor", 
+                    "PctFemale", "PctOccupied", "PctMovedIn5",
+                    "smokerate2000")
+```
