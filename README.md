@@ -45,5 +45,5 @@ dataset <- getMatchedDataset(exposure = inmap2005, covariates, covariate.vars, r
 ```
 plotExposureUSmap(dataset$raw, exposure.binary = FALSE)
 ```
-![Alt text]{images/continuous.png}
+![Alt text](images/continuous.png)
 
