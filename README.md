@@ -33,10 +33,17 @@ Covariates: covariates contains a data table of potential confounders of the IHD
 
 ### Perform propensity score matching to adjust for potential confounders
 ```
+# Include these regions
+regions <- c("IndustrialMidwest", "Northeast", "Southeast")
+
 # Covariates to adjust for using propensity score matching
 covariate.vars <- c("logPop", "PctUrban","MedianHHInc", "PctPoor", "smokerate2000")
 
-dataset <- getMatchedDataset(exposure, covariates, covariate.vars)
+dataset <- getMatchedDataset(exposure = inmap2005, covariates, covariate.vars, regions)
+```
+### Plot a U.S. map of the exposure
+```
+plotExposureUSmap(dataset$raw, exposure.binary = FALSE)
 ```
 
 

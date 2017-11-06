@@ -2,10 +2,10 @@
 #'
 #' This function dichotomizes the exposure variable based upon the specified
 #' percentile cutoff.  This dichotomization is done prior to any subsetting
-#' on geographic region.   Using the MatchIt package (add citation), high exposed
+#' on geographic region.   Using the MatchIt package, high exposed
 #' ZIP codes are matched to control locations with similar propensity scores.
 #' The caliper is the maximum allowed difference in propensity scores when
-#' selecting matches.  The default caliper is 20% of the pooled standard
+#' selecting matches.  The default caliper is 20 percent of the pooled standard
 #' deviation of the logit of the propensity scores of the high exposed and
 #' control locations, as suggested in Austin 2011.  Categorical variables
 #' can be matched on exactly.
@@ -34,18 +34,29 @@
 #'
 #' @export
 #'
+#' @references
+#' \insertRef{austin2011introduction}{sourceOrientedApproach}
+#'
+#' \insertRef{ho2011matchit}{sourceOrientedApproach}
+#'
 #' @examples
-#' data('covariates')
-#' data('inmap2005')
-#' covariate.vars <- c("logPop", "PctUrban", "PctBlack","MedianHHInc","smokerate2000")
-#' dataset <- getMatchedDataset(exposure, covariates, covariate.vars)
+#' # Include these regions
+#' regions <- c("IndustrialMidwest", "Northeast", "Southeast")
+#'
+#' # Covariates to adjust for using propensity score matching
+#' covariate.vars <- c("logPop", "PctUrban","MedianHHInc", "PctPoor", "smokerate2000")
+#'
+#' dataset <- getMatchedDataset(exposure = inmap2005, covariates, covariate.vars, regions)
+
 
 getMatchedDataset <- function(exposure, covariates, covariate.vars, regions = "all",
                               exact.vars = NULL, exposure.cutoff.percentile = 0.80, caliper = "default"){
 
   require(MatchIt)
-  colnames(exposure)[1] <- "zip"
-  colnames(covariates)[1] <- "zip"
+  require(data.table)
+  exposure <- data.table(exposure)
+  covariates <- data.table(covariates)
+
   setkey(exposure,zip)
   setkey(covariates, zip)
   exposure.var <- colnames(exposure)[2]
@@ -66,18 +77,18 @@ getMatchedDataset <- function(exposure, covariates, covariate.vars, regions = "a
     covariate.vars <- covariate.vars[which(covariate.vars %in% colnames(covariates))]
   }
 
-  #Only use zip codes with all covariates
-  covariates <- covariates[complete.cases(covariates[ ,covariate.vars, with = FALSE]), ]
-
-  #Only use zip codes with all exposures
-  exposure <- exposure[complete.cases(exposure), ]
 
   #join two data tables
-  dataset <- exposure[covariates, nomatch = 0]
+  #dataset <- exposure[covariates, nomatch = 0]
+  #dataset <- exposure[covariates, ]
+  dataset <- merge(exposure, covariates, by = "zip")
+
+  #Only use zip codes with all covariates
+  dataset <- dataset[complete.cases(dataset), ]
 
   #dichotomize exposure ~ note this is done before dropping other regions
-  cutoff <- quantile(dataset[, get(exposure.var)], exposure.cutoff.percentile)
-  dataset[ , High := ifelse(get(exposure.var) > cutoff,1,0 )]
+  cutoff <- quantile(dataset[[exposure.var]], exposure.cutoff.percentile)
+  dataset$High <- ifelse(dataset[[exposure.var]] > cutoff,1,0 )
 
   #subset by regions ~ note this is done after dichotomizing the exposure
   if(!"all" %in% regions){
