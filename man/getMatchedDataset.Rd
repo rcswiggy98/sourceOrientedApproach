@@ -54,6 +54,6 @@ covariate.vars <- c("logPop", "PctUrban", "PctBlack","MedianHHInc","smokerate200
 dataset <- getMatchedDataset(exposure, covariates, covariate.vars)
 }
 \references{
-\insertRef{Rpack:bibtex}{ho2011matchit}
+\insertRef{ho2011matchit}{sourceOrientedApproach}
 }
 \keyword{keywords}
