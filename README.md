@@ -64,7 +64,7 @@ UPDATE THIS ONCE I HAVE WEATHER DATA
 ### Other useful information
 ```
 # Histogram of the propensity scores by high exposed and controls
-propensityScoreHist()
+plotPropensityScoreHistogram(dataset$raw)
 
 # Standardized mean difference plot (before and after matching)
 createSMDplot(dataset$matched.model)
@@ -76,5 +76,9 @@ dataset$match.model$nn
 ![Alt text](images/SMD.png)
 ### Estimate incidence rate ratio (IRR) for IHD comparing high exposed locations to the controls
 ```
+outcome.model <- fitOutcomeModel(dataset$matched, ihd2005, covariate.vars)
+summary(outcome.model)
 
+# Coefficients and confidence intervals on natural scale
+cbind(exp(coef(outcome.model)), exp(confint(outcome.model)))
 ```

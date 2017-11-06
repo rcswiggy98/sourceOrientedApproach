@@ -37,9 +37,10 @@ createSMDplot <- function(matched.model){
   require(ggplot2)
   require(MatchIt)
 
-  SMD.vars <- rownames(summary(matched.model, standardize = TRUE)$sum.all)[-1]
+  sum.all <-  summary(matched.model, standardize = TRUE)[[3]]
 
-  SMD.all <- summary(matched.model, standardize = TRUE)$sum.all[-1,4]
+  SMD.vars <- rownames(sum.all)[-1]
+  SMD.all <- sum.all[-1,4]
 
   SMD.matched <- summary(matched.model, standardize = TRUE)$sum.matched[-1,4]
 

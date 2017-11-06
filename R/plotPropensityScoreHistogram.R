@@ -40,11 +40,11 @@ plotPropensityScoreHistogram <- function(dataset, main = ""){
   }
 
   prop_hist <- hist(dataset$prop.scores, plot = FALSE, breaks = 50)
-  hist(dataset[High ==1, ]$prop.scores, xlim = c(0,1),
+  hist(subset(dataset, High ==1)$prop.scores, xlim = c(0,1),
        col=makeTransparent("red", alpha=0.7), breaks = 50,
        main = main, xlab = "Propensity Score",
        ylim = c(0,max(prop_hist$counts)))
-  hist(dataset[High == 0,]$prop.scores, breaks = 50,
+  hist(subset(dataset, High ==0)$prop.scores, breaks = 50,
        col=makeTransparent("blue", alpha=0.7),add = T)
   legend(0.5,max(prop_hist$counts), c("High Exposed","Low Exposed"), fill = c(rgb(1,0,0,0.5),rgb(0,0,1,0.5)),
            cex = 1, bty = "n", xjust = 0.5)
