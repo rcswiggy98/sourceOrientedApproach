@@ -41,9 +41,9 @@ covariate.vars <- c("logPop", "PctUrban","MedianHHInc", "PctPoor", "smokerate200
 
 dataset <- getMatchedDataset(exposure = inmap2005, covariates, covariate.vars, regions)
 ```
-### Plot a U.S. map of the exposure
+### Plot U.S. maps of the exposure
 ```
 plotExposureUSmap(dataset$raw, exposure.binary = FALSE)
 ```
-
+![Alt text]{images/continuous.png}
 
