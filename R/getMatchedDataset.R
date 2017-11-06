@@ -34,9 +34,6 @@
 #'
 #' @export
 #'
-#' @references
-#'
-#'
 #' @examples
 #' data('covariates')
 #' data('inmap2005')
