@@ -53,7 +53,4 @@ data('inmap2005')
 covariate.vars <- c("logPop", "PctUrban", "PctBlack","MedianHHInc","smokerate2000")
 dataset <- getMatchedDataset(exposure, covariates, covariate.vars)
 }
-\references{
-
-}
 \keyword{keywords}
