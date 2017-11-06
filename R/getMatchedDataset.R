@@ -35,7 +35,7 @@
 #' @export
 #'
 #' @references
-#' \insertRef{ho2011matchit}{sourceOrientedApproach}
+#' \insertRef{ho2011matchit:bibtex}{sourceOrientedApproach}
 #'
 #' @examples
 #' data('covariates')
