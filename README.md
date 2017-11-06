@@ -72,7 +72,7 @@ createSMDplot(dataset$matched.model)
 # Summary of matching results
 dataset$match.model$nn
 ```
-
+![Alt text](images/propensityScores.png)
 ![Alt text](images/SMD.png)
 ### Estimate incidence rate ratio (IRR) for IHD comparing high exposed locations to the controls
 ```

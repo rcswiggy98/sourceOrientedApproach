@@ -3,3 +3,4 @@
 export(createSMDplot)
 export(getMatchedDataset)
 export(plotExposureUSmap)
+export(plotPropensityScoreHistogram)
