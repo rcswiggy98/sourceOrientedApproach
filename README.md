@@ -16,7 +16,7 @@ library(sourceOrientedApproach)
 ```
 # sourceOrientedApproach example
 
-Estimating the effect of high coal emissions exposure on IHD hospitalizations in the MEDICARE population.
+Estimate the effect of high coal emissions exposure on ischemic heart disease (IHD) hospitalizations in the MEDICARE population.
 
 ## Create a data set for analysis
 
@@ -29,6 +29,8 @@ Exposure: inmap2005 contains a data table of the estimated PM2.5 at each ZIP cod
 ### covariates
 Covariates: covariates contains a data table of potential confounders of the IHD/exposure relationship. They include various demographic and socioeconomic characteristics of each ZIP code from census data, smoking rates, and climitalogical variables. You can load the data set using ```data('covariates')```.
 
+NOTE: NEED TO ADD WEATHER TO THESE
+
 ## Analyzing a data set
 
 ### Perform propensity score matching to adjust for potential confounders
@@ -37,7 +39,8 @@ Covariates: covariates contains a data table of potential confounders of the IHD
 regions <- c("IndustrialMidwest", "Northeast", "Southeast")
 
 # Covariates to adjust for using propensity score matching
-covariate.vars <- c("logPop", "PctUrban","MedianHHInc", "PctPoor", "smokerate2000")
+covariate.vars <- c("logPop","PctUrban","PctBlack","PctHisp","PctHighSchool", 
+"MedianHHInc", "PctPoor","PctFemale","PctOccupied","PctMovedIn5", "smokerate2000")
 
 dataset <- getMatchedDataset(exposure = inmap2005, covariates, covariate.vars, regions)
 ```
@@ -56,4 +59,22 @@ plotExposureUSmap(dataset$raw, exposure.binary = TRUE)
 # Matched data
 plotExposureUSmap(dataset$matched, exposure.binary = TRUE)
 ```
+UPDATE THIS ONCE I HAVE WEATHER DATA
+![Alt text](images/binary_matched.png)
+### Other useful information
+```
+# Histogram of the propensity scores by high exposed and controls
+propensityScoreHist()
 
+# Standardized mean difference plot (before and after matching)
+createSMDplot(dataset$matched.model)
+
+# Summary of matching results
+dataset$match.model$nn
+```
+
+![Alt text](images/SMD.png)
+### Estimate incidence rate ratio (IRR) for IHD comparing high exposed locations to the controls
+```
+
+```

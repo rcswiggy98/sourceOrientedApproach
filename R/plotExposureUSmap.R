@@ -1,49 +1,33 @@
-#' Obtain a propensity score matched dataset
+#' Plot a U.S. map depicting the exposure variable
 #'
-#' This function dichotomizes the exposure variable based upon the specified
-#' percentile cutoff.  This dichotomization is done prior to any subsetting
-#' on geographic region.   Using the MatchIt package, high exposed
-#' ZIP codes are matched to control locations with similar propensity scores.
-#' The caliper is the maximum allowed difference in propensity scores when
-#' selecting matches.  The default caliper is 20% of the pooled standard
-#' deviation of the logit of the propensity scores of the high exposed and
-#' control locations, as suggested in Austin 2011.  Categorical variables
-#' can be matched on exactly.
+#' This function plots a map depicting the exposure variable on a U.S. map.
+#' The exposure variable can be either continous or binary.
 #'
-#' @param exposure A data table.  The first column must be the unit identifier (for example, 5-digit U.S. zip code)
-#' and the second column is the exposure of interest \code{exposure}
-#' @param covariates A data table. The first column must be the unit identifier (for example, 5-digit U.S. zip code).
-#' Subsequent columns are covariates to include in the propensity score model. \code{covariates}
-#' @param covariate.vars A character vector containing a subset of
-#'the covariate column names to include in the propensity score model. \code{covariate.vars}
-#' @param regions A character vector containing the geographic regions
-#' ("Northeast", "Southeast", etc.) to include in the analysis. Defaults to
-#' all regions. \code{regions}
-#' @param exact.vars A character vector of colnames in covariates to match exactly
-#' on.  This variable cannot be a continuous variable.\code{exact.vars}
-#' @param exposure.cutoff.percentile A numeric value between 0 and 1 specifying the
-#' cutoff, in terms of percentile of the exposure distribution, between high exposed
-#' and controls locations.
-#' @param caliper A numeric value specifying the maximum allowable difference
-#' in propensity scores when performing matching.
+#' @param dataset  A data table containing the exposure variable.  If continuous, the exposure
+#' variable must be the second column of the data table.  If binary, the exposure should be
+#' either one or zero and in a column named High. In addition, the data table must contain
+#' each ZIP code's coordinates in columns named Longtitude and Latitude \code{dataset}
+#' @param exposure.binary TRUE/FALSE. Whether to plot the binary or continuous exposure.
+#' \code{exposure.binary}
 #'
-#' @return output A list containing the raw dataset, the matched dataset,
-#' a matchitobject, the caliper, and the high/control cutoff.
+#' @return NA
 #'
 #' @keywords keywords
 #'
 #' @export
 #'
 #' @references
-#' \insertRef{austin2011introduction}{sourceOrientedApproach}
-#'
-#' \insertRef{ho2011matchit}{sourceOrientedApproach}
+#' \insertRef{kahle2013ggmap}{sourceOrientedApproach}
 #'
 #' @examples
 #' data('covariates')
 #' data('inmap2005')
 #' covariate.vars <- c("logPop", "PctUrban", "PctBlack","MedianHHInc","smokerate2000")
 #' dataset <- getMatchedDataset(exposure, covariates, covariate.vars)
+#'
+#' #plot the raw dataset
+#' plotExposureUSmap(dataset$raw, exposure.binary = TRUE)
+#' plotExposureUSmap(dataset$raw, exposure.binary = FALSE)
 
 plotExposureUSmap <- function(dataset, exposure.binary = TRUE, main = ""){
   require(ggmap)
@@ -103,7 +87,8 @@ plotExposureUSmap <- function(dataset, exposure.binary = TRUE, main = ""){
   }
 
   if(exposure.binary == FALSE){
-    p1 <- p1 + geom_point(data = dataset, aes(x=Longitude, y=Latitude, colour=PM25inMAP),
+    cont.var <- colnames(dataset)[2]
+    p1 <- p1 + geom_point(data = dataset, aes_string(x="Longitude", y="Latitude", colour=cont.var),
                           alpha = 0.2, size=0.01)
     p1 <- p1 + scale_colour_gradient(low = "white", high = "black")
   }
