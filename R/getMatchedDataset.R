@@ -34,6 +34,9 @@
 #'
 #' @export
 #'
+#' @references
+#' \insertRef{Rpack:bibtex}{ho2011matchit}
+#'
 #' @examples
 #' data('covariates')
 #' data('inmap2005')

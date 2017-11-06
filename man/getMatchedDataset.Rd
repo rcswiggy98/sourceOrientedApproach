@@ -33,7 +33,8 @@ and controls locations.}
 in propensity scores when performing matching.}
 }
 \value{
-output A description of the object the function outputs
+output A list containing the raw dataset, the matched dataset,
+a matchitobject, the caliper, and the high/control cutoff.
 }
 \description{
 This function dichotomizes the exposure variable based upon the specified
@@ -47,6 +48,12 @@ control locations, as suggested in Austin 2011.  Categorical variables
 can be matched on exactly.
 }
 \examples{
-R code here showing how your function works
+data('covariates')
+data('inmap2005')
+covariate.vars <- c("logPop", "PctUrban", "PctBlack","MedianHHInc","smokerate2000")
+dataset <- getMatchedDataset(exposure, covariates, covariate.vars)
+}
+\references{
+\insertRef{Rpack:bibtex}{ho2011matchit}
 }
 \keyword{keywords}
