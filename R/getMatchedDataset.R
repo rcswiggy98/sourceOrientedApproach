@@ -1,10 +1,13 @@
 #' Obtain a propensity score matched dataset
 #'
-#' This function dichotomizes the exposure variable based upon the specified
-#' percentile cutoff.  This dichotomization is done prior to any subsetting
-#' on geographic region.   Using the MatchIt package, high exposed
+#' This function is designed for use with the analysis performed in
+#' A Source Oriented Approach to Coal Emissions Health Effects.  Specifically,
+#' this function dichotomizes the exposure variable (typically, coal emissions)
+#' based upon a specified percentile cutoff resulting in ZIP codes being classified
+#' as either highly exposed or control locations. Using the MatchIt package, high exposed
 #' ZIP codes are matched to control locations with similar propensity scores.
-#' The caliper is the maximum allowed difference in propensity scores when
+#' A caliper can be specified, which is the maximum allowed difference in
+#' propensity scores when
 #' selecting matches.  The default caliper is 20 percent of the pooled standard
 #' deviation of the logit of the propensity scores of the high exposed and
 #' control locations, as suggested in Austin 2011.  Categorical variables
