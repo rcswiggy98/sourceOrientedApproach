@@ -87,4 +87,5 @@ Tessum, Christopher W., Jason D. Hill, and Julian D. Marshall. "InMAP: A model f
 
 Ho, Daniel E., et al. "MatchIt: nonparametric preprocessing for parametric causal inference." Journal of Statistical Software 42.8 (2011): 1-28.
 
+Austin, Peter C. "An introduction to propensity score methods for reducing the effects of confounding in observational studies." Multivariate behavioral research 46.3 (2011): 399-424.
 
