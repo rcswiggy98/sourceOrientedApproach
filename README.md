@@ -21,13 +21,13 @@ Estimate the effect of high coal emissions exposure on ischemic heart disease (I
 ## Create a data set for analysis
 
 ### outcome - ihd2005 
-Outcome: ihd2005 contains a data table of simulated MEDICARE health outcomes in 2005.  The IHD column contains the simulated number of ischemic heart disease hospitalizations in the MEDICARE population in 2005 at each U.S. ZIP code.  The person_years column is the number of observed person years contributing to the hospitalizations.  You can load the data set using ```data('ihd2005')```. (need to get these from Cory)
+Outcome: ihd2005 contains a data table of simulated MEDICARE health outcomes in 2005.  The IHD column contains the simulated number of IHD hospitalizations in the MEDICARE population in 2005 at each U.S. ZIP code.  The person_years column is the number of observed person years contributing to the hospitalizations.  You can load the data set using ```data('ihd2005')```. (need to get these from Cory)
 
 ### exposure - inmap2005
 Exposure: inmap2005 contains a data table of the estimated PM2.5 at each ZIP code attributible to the emissions from 783 coal-fired power generating units operating in the U.S. in 2005.  We obtained these estimates using the Intervention Model for Air Pollution. You can load the data set using ```data('inmap2005')```.
 
 ### covariates
-Covariates: covariates contains a data table of potential confounders of the IHD/exposure relationship. They include various demographic and socioeconomic characteristics of each ZIP code from census data, smoking rates, and climitalogical variables. You can load the data set using ```data('covariates')```.
+Covariates: covariates contains a data table of potential confounders of the IHD/exposure relationship. They include various demographic and socioeconomic characteristics of each ZIP code from Census 2000, county smoking rates (add citation), and climatological variables. You can load the data set using ```data('covariates')```.
 
 NOTE: NEED TO ADD WEATHER TO THESE
 
@@ -83,9 +83,10 @@ summary(outcome.model)
 cbind(exp(coef(outcome.model)), exp(confint(outcome.model)))
 ```
 # References
-Tessum, Christopher W., Jason D. Hill, and Julian D. Marshall. "InMAP: A model for air pollution interventions." PloS one 12.4 (2017): e0176131.
+Austin, Peter C. "An introduction to propensity score methods for reducing the effects of confounding in observational studies." Multivariate behavioral research 46.3 (2011): 399-424.
+
+Dwyer-Lindgren, Laura, et al. "Cigarette smoking prevalence in US counties: 1996-2012." Population health metrics 12.1 (2014): 5.
 
 Ho, Daniel E., et al. "MatchIt: nonparametric preprocessing for parametric causal inference." Journal of Statistical Software 42.8 (2011): 1-28.
 
-Austin, Peter C. "An introduction to propensity score methods for reducing the effects of confounding in observational studies." Multivariate behavioral research 46.3 (2011): 399-424.
-
+Tessum, Christopher W., Jason D. Hill, and Julian D. Marshall. "InMAP: A model for air pollution interventions." PloS one 12.4 (2017): e0176131.
