@@ -3,7 +3,7 @@
 #' This function is designed for use with the analysis performed in
 #' A Source Oriented Approach to Coal Emissions Health Effects.  Specifically,
 #' this function dichotomizes the exposure variable (typically, coal emissions)
-#' based upon a specified percentile cutoff resulting in ZIP codes being classified
+#' to classify U.S. ZIP codes
 #' as either highly exposed or control locations. Using the MatchIt package, high exposed
 #' ZIP codes are matched to control locations with similar propensity scores.
 #' A caliper can be specified, which is the maximum allowed difference in
