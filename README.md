@@ -68,7 +68,7 @@ UPDATE THIS ONCE I HAVE WEATHER DATA
 plotPropensityScoreHistogram(dataset$raw)
 
 # Standardized mean difference plot (before and after matching)
-createSMDplot(dataset$matched.model)
+createSMDplot(dataset$match.model)
 
 # Summary of matching results
 dataset$match.model$nn
