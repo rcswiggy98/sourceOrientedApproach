@@ -43,7 +43,7 @@ covariate.vars <- c("logPop","PctUrban","PctBlack","PctHisp","PctHighSchool",
 "MedianHHInc", "PctPoor","PctFemale","PctOccupied","PctMovedIn5", "smokerate2000",
 "mean_age", "Female_rate", "White_rate", "avtmpf", "avrelh")
 
-dataset <- getMatchedDataset(exposure = inmap2005, covariates, covariate.vars, regions)
+dataset <- getMatchedDataset(exposure = inmap2005, covariates, covariate.vars, regions, exact.vars = "region")
 ```
 ### Plot U.S. maps of the exposure
 ```
@@ -77,7 +77,7 @@ dataset$match.model$nn
 ![Alt text](images/SMD.png)
 ### Estimate incidence rate ratio (IRR) for IHD comparing high exposed locations to the controls
 ```
-outcome.model <- fitOutcomeModel(dataset$matched, ihd2005, covariate.vars)
+outcome.model <- fitOutcomeModel(dataset$matched, medicare_sim2005, covariate.vars)
 summary(outcome.model)
 
 # Coefficients and confidence intervals on natural scale
