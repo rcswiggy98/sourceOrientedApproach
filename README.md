@@ -40,7 +40,8 @@ regions <- c("IndustrialMidwest", "Northeast", "Southeast")
 
 # Covariates to adjust for using propensity score matching
 covariate.vars <- c("logPop","PctUrban","PctBlack","PctHisp","PctHighSchool", 
-"MedianHHInc", "PctPoor","PctFemale","PctOccupied","PctMovedIn5", "smokerate2000")
+"MedianHHInc", "PctPoor","PctFemale","PctOccupied","PctMovedIn5", "smokerate2000",
+"mean_age", "Female_rate", "White_rate", "avtmpf", "avrelh")
 
 dataset <- getMatchedDataset(exposure = inmap2005, covariates, covariate.vars, regions)
 ```
