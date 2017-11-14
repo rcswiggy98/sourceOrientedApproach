@@ -43,6 +43,7 @@ covariate.vars <- c("logPop","PctUrban","PctBlack","PctHisp","PctHighSchool",
 "MedianHHInc", "PctPoor","PctFemale","PctOccupied","PctMovedIn5", "smokerate2000",
 "mean_age", "Female_rate", "White_rate", "avtmpf", "avrelh")
 
+# Obtain a matched dataset; matched exactly on region 
 dataset <- getMatchedDataset(exposure = inmap2005, covariates, covariate.vars, regions, exact.vars = "region")
 ```
 ### Plot U.S. maps of the exposure
