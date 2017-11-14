@@ -65,12 +65,13 @@ getMatchedDataset <- function(exposure, covariates, covariate.vars, regions = "a
   exposure.var <- colnames(exposure)[2]
 
   if(!is.null(exact.vars)){
-    if(is.numeric(dataset[ , get(exact.vars)])){
+    if(is.numeric(covariates[[exact.vars]])){
     print("Exact matching variables should be categorical. No exact matching performed.")
     exact.vars = NULL
     }
   }
 
+  #used when covariate.vars = "all"
   if(length(covariate.vars) == 1 & "all" %in% covariate.vars){
     covariate.vars <- colnames(covariates)[-1]
   }
