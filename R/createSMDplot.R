@@ -38,12 +38,9 @@ createSMDplot <- function(matched.model){
   require(MatchIt)
 
   sum.all <-  summary(matched.model, standardize = TRUE)[[3]]
-
   SMD.vars <- rownames(sum.all)[-1]
   SMD.all <- sum.all[-1,4]
-
   SMD.matched <- summary(matched.model, standardize = TRUE)$sum.matched[-1,4]
-
   SMD.vars <- SMD.vars[!SMD.all  %in% c(-Inf, Inf)]
   SMD.matched <- SMD.matched[!SMD.all  %in% c(-Inf, Inf)]
   SMD.all <- SMD.all[!SMD.all %in% c(-Inf, Inf)]
