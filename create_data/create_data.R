@@ -30,7 +30,7 @@ save( pm25_2005, file = '~/Dropbox/Rpackages/sourceOrientedApproach/data/pm25_20
 #             CMAQ-DDM
 ## ======================================================== ##
 cmaqddm2005 <- fread( '~/Dropbox/Harvard/RFMeval_Local/Comparisons_Intermodel/evaluate_RFMs_intermediates/CMAQ-DDM_zip_links.csv',
-                  keepLeadingZeros = T, drop = 'V1')
+                  keepLeadingZeros = T, drop = 'V1')[year == 2005]
 
 save( cmaqddm2005, file = '~/Dropbox/Rpackages/sourceOrientedApproach/data/cmaqddm2005.RData')
 
