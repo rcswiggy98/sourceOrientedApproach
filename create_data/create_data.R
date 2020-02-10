@@ -18,6 +18,17 @@ save( pm25_2005, file = '~/Dropbox/Rpackages/sourceOrientedApproach/data/pm25_20
 ## ======================================================== ##
 #             Sulfate (where is it?)
 ## ======================================================== ##
+file.start <- '/Users/lhenneman/Dropbox/Harvard/ARP/Data_Exposure/so4_zips2/so4_zips2005_'
+so42005 <- rbindlist( lapply( 1:12,
+                             function( m){
+                               M <- formatC( m, width = 2, flag = '0')
+                               file.in <- paste0( file.start, M, '.csv')
+                               data.in <- fread( file.in, keepLeadingZeros = T, drop = 'V1')
+                               return( data.in[, .( ZIP, STATE, month, SO4)])
+                             }))
+so4_2005 <- so42005[, .(SO4 = mean( SO4)), by = .( ZIP, STATE)]
+save( so4_2005, file = '~/Dropbox/Rpackages/sourceOrientedApproach/data/so4_2005.RData')
+
 
 
 ## ======================================================== ##
