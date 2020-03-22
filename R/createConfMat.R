@@ -22,6 +22,5 @@ createConfMat <- function(models=list(), ground.truth="CMAQ") {
     name <- names(preds[i])[1]
     confMats[[name]] <- confusionMatrix(preds[[name]], reference = ref, dnn=c(name, ground.truth))
   }
-  browser()
   return(confMats[names(confMats) != ground.truth])
 }
