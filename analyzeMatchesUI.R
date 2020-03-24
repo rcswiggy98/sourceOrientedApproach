@@ -195,8 +195,19 @@ server <- function(input, output, session) {
       local({
         idx <- i
         plotname <- paste("smd",i,sep="")
-        if(!is.stratified) output[[plotname]] <- renderPlot({createSMDplot(more.models[[idx]]$match.model)})
-        else output[[plotname]] <- renderPlot({createStratSMDplot(more.models[[idx]]$matched)})
+        if(!is.stratified){
+          output[[plotname]] <- renderPlot({
+            createSMDplot(more.models[[idx]]$match.model, name=names(more.models)[idx])
+          })
+        }
+        else {
+          # get matched and raw datasets only from analyzeMatches
+          smds <- createStratSMD(models=more.models[idx])
+
+          output[[plotname]] <- renderPlot({
+            plotStratSMD(smds[[1]][[1]], smds[[2]][[1]], name=names(more.models)[idx])
+          })
+        }
       })
     }
 

@@ -2,18 +2,20 @@
 #'
 #' @param plot Any element (a data.table) of the "dataPlots" named sublist returned by createStratSMD \code{plot}
 #' @param a.melt Any element (a melted data.table) "dataPlotMelts" named sublist returned by createStratSMD \code{a.melt}
+#' @param name Name of the plot
 #' @return NA
-plotStratSMD <- function(plot, a.melt){
+plotStratSMD <- function(plot, a.melt, name=""){
   require(ggplot2)
+  # require(plotly)
   cbbPalette <- c("#E69F00", "#0072B2", "#D55E00", "#CC79A7", "#56B4E9", "#009E73","#F0E442")
   x.lab <- "Standardized Mean Difference \n (High/Low)"
 
   dataPlot <- plot
   dataPlotMelt <- a.melt
-  browser()
   varNames <- as.character(dataPlot$variable)[order(dataPlot$Before)]
   dataPlotMelt$variable <- factor(dataPlotMelt$variable, levels = varNames)
 
+  # coerce to gg_plotly()?
   ggplot(data = dataPlotMelt, mapping = aes(x = variable,
                                             y = SMD,
                                             group = Dataset,
@@ -34,5 +36,5 @@ plotStratSMD <- function(plot, a.melt){
           legend.title = element_blank(),
           legend.position = "right",
           plot.title = element_text(size = 12, hjust = 0.5)) +
-    labs(y = x.lab, title = "")
+    labs(y = x.lab, title = name)
 }

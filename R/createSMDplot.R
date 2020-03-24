@@ -33,7 +33,7 @@
 #'
 #' createSMDplot(dataset$matched.model)
 
-createSMDplot <- function(matched.model){
+createSMDplot <- function(matched.model, name=""){
   require(ggplot2)
   require(MatchIt)
 
@@ -79,5 +79,5 @@ createSMDplot <- function(matched.model){
           legend.title = element_blank(),
           legend.position = "right",
           plot.title = element_text(size = 12, hjust = 0.5)) +
-    labs(y = x.lab, title = "")
+    labs(y = x.lab, title = name)
 }
