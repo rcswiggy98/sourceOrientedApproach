@@ -1,4 +1,6 @@
-#' @param ... Outputs from matchit(), representing matches done by the exposure metrics
+#' @param models Outputs from analyzeMatches, representing matches done by the exposure metrics \code{models}
+#' @param ground.truth Character corresponding to a list element in models, will be
+#' the 2nd column of each confusion matrix (what to compare against)
 #' @return A named list of tables, names corresponding to the compared exposure
 createConfMat <- function(models=list(), ground.truth="CMAQ") {
   require(caret)
@@ -14,7 +16,7 @@ createConfMat <- function(models=list(), ground.truth="CMAQ") {
                             return(treatment)},
                   simplify = F, USE.NAMES = T
   )
-  # get the base case (rows of the confusion matrix)
+  # get the base case (2nd column of the conf matrix)
   ref <- preds[[ground.truth]]
   confMats <- list()
   for(i in 1:length(preds)){

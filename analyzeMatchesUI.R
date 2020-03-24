@@ -5,10 +5,6 @@ source('./R/createConfMat.R')
 library(data.table)
 library(shiny)
 
-# PRIVATE KEY
-#gapi.f <- './data/__gmapsstaticAPIkey.txt'
-#gapi <- readChar(gapi.f, file.info(gapi.f)$size)
-
 # read in data before looping server
 states <- readLines("./data/states.txt")
 states[51] <- "All"
@@ -42,8 +38,8 @@ ui <- fluidPage(
 
       # pass to analyzeMatches after user clicks init button
       sliderInput("caliper.threshold",
-                  label = "Caliper",
-                  min = 0, max = 2, value = 0.2, step=0.025),
+                  label = "Caliper (for nn matching only)",
+                  min = 0, max = 2, value = 0.2, step=0.01),
 
       # change quantiles in analyzeMatches to this after user clicks init button
       numericInput("n.prop.quantiles",
@@ -93,8 +89,14 @@ ui <- fluidPage(
       sliderInput("norm.lat", "Normalized Latitude", min = 0, max = 1, value = c(0,1))
     ),
 
-    mainPanel(plotly::plotlyOutput("map", height="50%"),
-              plotOutput("SMD"),
+    # prompt the user for main exposure: static plot only.
+    # plot the secondary exposure as well.
+    # plot histograms of exposure by region.
+    # fit Outcome model and plot effect and boxplot per region
+    # propensity score distributions and confusion matrices at the end
+    mainPanel(#plotly::plotlyOutput("map", height="50%"),
+              uiOutput("secondary.maps"),
+              uiOutput("SMD"),
               uiOutput("conf.mats"))
   )
 )
@@ -138,13 +140,34 @@ server <- function(input, output, session) {
                                                              exposure.cutoff.percentile=cutoff,
                                                              match.method=match.method, caliper.type="default",
                                                              caliper.threshold=caliper.threshold,
-                                                             quantiles=quantiles)[c(1,2)])},
+                                                             quantiles=quantiles)[c(1:4)])},
                             simplify=F, USE.NAMES=T)
-      #outputting all conf. matrices
-      #output$conf.mats <- renderTable(createConfMat(more.models)[[1]]$table, rownames = T, colnames = T)
+      # plot additional exposure maps
+      output$secondary.maps <- renderUI({
+        maps.list <- lapply(1:length(more.models), function(i){
+          name <- paste("map",i,sep="")
+          plotlyOutput(name)#, width = paste(100/length(more.models), "%", sep=""))
+        })
+        do.call(tagList, maps.list)
+      })
+      for(i in 1:length(more.models)){
+        local({
+          idx <- i
+          plotname <- paste("map", idx, sep = "")
+          output[[plotname]] <- plotly::renderPlotly({
+            plotMatches(data=more.models[[idx]]$matched,
+                        pairs=more.models[[idx]]$pairs,
+                        filters=filter.params,
+                        stratified=is.stratified,
+                        plotname = names(more.models)[idx])
+          })
+        })
+      }
+
+      # plot the confusion matrices
       mats.to.plot <- createConfMat(more.models, ground.truth = input$exposure.var)
       output$conf.mats <- renderUI({
-        plot.output.list <- lapply(1:length(mats.to.plot), function(i){
+        plot.output.list <- lapply(1:length(more.models), function(i){
           name <- paste("plot", i, sep="")
           tableOutput(name)#, width = paste(95/length(mats.to.plot),"%", sep=""))
         })
@@ -154,21 +177,37 @@ server <- function(input, output, session) {
         local({
           idx <- i
           plotname <- paste("plot", idx, sep = "")
-          output[[plotname]] <- renderTable(mats.to.plot[[i]]$table, rownames = T, colnames = T)
+          output[[plotname]] <- renderTable(mats.to.plot[[idx]]$table, rownames = T, colnames = T)
         })
       }
     }
 
-    output$SMD <- NULL
-    # get SMD plots for all selected covariates
-    if(!is.stratified){
-      output$SMD <- renderPlot({createSMDplot(mm.out$match.model)})
+    # make the SMD balance plots
+    # output$SMD <- NULL
+    output$SMD <- renderUI({
+      smd.list <- lapply(1:length(more.models), function(i){
+        name <- paste("smd", i, sep="")
+        plotOutput(name)#, width = paste(95/length(mats.to.plot),"%", sep=""))
+      })
+      do.call(tagList, smd.list)
+    })
+    for(i in 1:length(more.models)) {
+      local({
+        idx <- i
+        plotname <- paste("smd",i,sep="")
+        if(!is.stratified) output[[plotname]] <- renderPlot({createSMDplot(more.models[[idx]]$match.model)})
+        else output[[plotname]] <- renderPlot({createStratSMDplot(more.models[[idx]]$matched)})
+      })
     }
 
+    # make the outcome model plots and the estimated IRRs for the given cutoff
+
+    # make the propensity score histograms
+
     # just compute the exposures for all 3 and let the user shift between them?
-    output$map <- plotly::renderPlotly({
-      plotMatches(data=mm.out$matched,pairs=mm.out$pairs,filters=filter.params,stratified=is.stratified)
-    })
+    #output$map <- plotly::renderPlotly({
+    #  plotMatches(data=mm.out$matched,pairs=mm.out$pairs,filters=filter.params,stratified=is.stratified)
+    #})
   })
 }
 

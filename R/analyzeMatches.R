@@ -1,14 +1,3 @@
-# need to write a script that
-# plots the exposure itself
-# changes the dichotimization cutoff, and exposure var
-# matches based on arbitrary prop quantiles (pass it a list of quantiles?)
-# matches based on k-NN
-# plots the matched pairs
-# counts the number of pairs in every region/state
-# summary statistics
-# NEED TO ADD DAPSM
-# visualization tool! RShiny?
-
 #' @param exposure A data table.  The first column must be the unit identifier
 #' (for example, 5-digit U.S. zip code)
 #' and the second column is the exposure of interest \code{exposure}
