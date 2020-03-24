@@ -34,8 +34,16 @@ save( so4_2005, file = '~/Dropbox/Rpackages/sourceOrientedApproach/data/so4_2005
 ## ======================================================== ##
 #             HyADS
 ## ======================================================== ##
+hyads_raw.f <- '~/Dropbox/Harvard/RFMeval_Local/HyADS/disperseR_hyads/zips_exposures_total_2005.fst'
+hyads_pm25.f <- '~/Dropbox/Harvard/RFMeval_Local/HyADS/disperseR_hyads/zips_pm25_total_2005.fst'
 
+hyads_raw <- read.fst( hyads_raw.f, as.data.table = TRUE, columns = c( 'ZIP', 'hyads'))[, year := 2005]
+hyads_pm25 <- read.fst( hyads_pm25.f, as.data.table = TRUE)[, year := 2005]
 
+save( hyads_raw, file = '~/Dropbox/Rpackages/sourceOrientedApproach/data/hyads_raw_2005.RData')
+save( hyads_pm25, file = '~/Dropbox/Rpackages/sourceOrientedApproach/data/hyads_pm25_2005.RData')
+
+#hyads_cmaq <- merge( hyads_pm25, cmaqddm2005, by = c( 'ZIP', 'year'))
 
 ## ======================================================== ##
 #             CMAQ-DDM

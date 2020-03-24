@@ -21,10 +21,19 @@ Estimate the effect of high coal emissions exposure on ischemic heart disease (I
 ## Create a data set for analysis
 
 ### outcome - medicare_sim2005 
-Outcome: medicare_sim2005 contains a data table of simulated MEDICARE health outcomes in 2005.  For example, the IHD column contains the simulated number of IHD hospitalizations in the MEDICARE population in 2005 at each U.S. ZIP code.  The person_years column is the number of observed person years contributing to the hospitalizations.  You can load the data set using ```data('medicare_sim2005')```. 
+Outcome: `medicare_sim2005` contains a data table of simulated MEDICARE health outcomes in 2005.  For example, the IHD column contains the simulated number of IHD hospitalizations in the MEDICARE population in 2005 at each U.S. ZIP code.  The person_years column is the number of observed person years contributing to the hospitalizations.  You can load the data set using ```data('medicare_sim2005')```. 
+
+### exposure - cmaqddm2005
+Exposure: `cmaqddm2005` contains a data table of the estimated coal PM2.5 source impacts at each ZIP code in 2005.  We obtained these estimates from Cesunica Ivey, author of [this study](https://pubs.acs.org/doi/abs/10.1021/acs.est.7b03781). You can load the data set using ```data('cmaqddm2005')```.
+
+### exposure - pm25_2005 and so4_2005
+Exposure: `so4_2005` and `pm25_2005` contain data tables of the estimated PM2.5 and SO4 at each ZIP code in the U.S. in 2005.  We obtained these from Randall Martin's group website and spatially allocated the original gridded dataset to ZIP codes. You can load the data set using ```data('so4_2005')``` and ```data('pm25_2005')```.
+
+### exposure - hyads_raw_2005 and hyads_pm25_2005
+Exposure: `hyads_raw_2005` and `hyads_pm25_2005` contain a data tables of the estimated raw and PM2.5 source impacts from coal power plants in the CAMD data base as calculated by [disperseR](https://github.com/lhenneman/disperseR) in 2005. WYou can load the data set using ```data('hyads_raw_2005')``` and ```data('hyads_pm25_2005')```.
 
 ### exposure - inmap2005
-Exposure: inmap2005 contains a data table of the estimated PM2.5 at each ZIP code attributible to the emissions from 783 coal-fired power generating units operating in the U.S. in 2005.  We obtained these estimates using the Intervention Model for Air Pollution. You can load the data set using ```data('inmap2005')```.
+Exposure: `inmap2005` contains a data table of the estimated PM2.5 at each ZIP code attributible to the emissions from 783 coal-fired power generating units operating in the U.S. in 2005.  We obtained these estimates using the Intervention Model for Air Pollution. You can load the data set using ```data('inmap2005')```.
 
 ### covariates
 Covariates: covariates contains a data table of potential confounders of the IHD/exposure relationship. They include various demographic and socioeconomic characteristics of each ZIP code from Census 2000, county smoking rates (add citation), and climatological variables. You can load the data set using ```data('covariates')```.
