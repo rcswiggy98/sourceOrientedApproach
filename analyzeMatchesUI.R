@@ -54,10 +54,9 @@ ui <- fluidPage(
                   label = "# of strata (for stratified matching only)",
                   min = 2, max = 25, value = 5, step=1),
 
-      # pass to analyzeMatches after user clicks init button; all data needs to be loaded!
-      #selectInput("exposure.var", label = "Exposure to plot matches for",
-      #            choices = list("HyADS", "CMAQ", "INMAP"),
-      #            selected = "CMAQ", width = NULL),
+      selectInput("exposure.var", label = "Exposure to compare against (for confusion matrix only)",
+                  choices = list("HyADS", "HyADSpm25", "CMAQ", "INMAP"),
+                  selected = "CMAQ", width = NULL),
 
       checkboxGroupInput("stuff.to.plot", label = "Plots to include",
                          choiceNames = list("Treatment map", "Confusion matrix",
@@ -144,7 +143,9 @@ server <- function(input, output, session) {
     #                         caliper.threshold=caliper.threshold, quantiles=quantiles)
 
     # do the compute to match the data given the selected exposures
-    exposure.vars.compare <- input$exposure.vars.compare
+    exposure.vars.compare <- unique(c(input$exposure.vars.compare, input$exposure.var))
+    # make sure input$exposure is also included, but not duplicated
+
     # add more exposures here
     exposures <- lapply(exposure.vars.compare, switch,
                         CMAQ=cmaqddm2005,HyADS=hyads2005,HyADSpm25=hyadspm2005,INMAP=inmap2005)
@@ -189,7 +190,7 @@ server <- function(input, output, session) {
     # plot the confusion matrices
     # TODO: specify ground truth?? Cannot compare all combinations
     if("conf.mat" %in% input$stuff.to.plot){
-      mats.to.plot <- createConfMat(more.models, ground.truth = input$exposure.vars.compare[1])
+      mats.to.plot <- createConfMat(more.models, ground.truth = input$exposure.var)
       output$conf.mats <- renderUI({
         plot.output.list <- lapply(1:length(more.models), function(i){
           name <- paste("plot", i, sep="")
@@ -201,7 +202,13 @@ server <- function(input, output, session) {
         local({
           idx <- i
           plotname <- paste("plot", idx, sep = "")
-          output[[plotname]] <- renderTable(mats.to.plot[[idx]]$table, rownames = T, colnames = T)
+          drops <- mats.to.plot[[idx]][[2]]
+          msg <- ifelse(drops < 0,
+                        paste("Removed", drops, "zips from", input$exposure.var, "raw data"),
+                        paste("Removed", drops, "zips from", names(more.models)[idx], "raw data"))
+          output[[plotname]] <- renderTable(mats.to.plot[[idx]][[1]]$table, rownames=T,
+                                            colnames = T,
+                                            caption = msg)
         })
       }
     } else {

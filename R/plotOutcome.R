@@ -1,13 +1,15 @@
 #' Generates a plot of either the outcome (incidence rate) or effect of treatment (IRR)
-#' based on the fitted model returned from fitOutcomeModel.
+#' based on the fitted model returned from fitOutcomeModel. For stratified matching, the
+#' model will use \code{model$raw}. For nn matching, \code{model$matched}.
 #'
 #' @param model The named list returned from analyzeMatches called on the exposure and covariates
 #' of interest.
 #' @param outcome data.table containing the outcome variable of interest (i.e. IHD)
-#' @param regions Character vector indicating regions to fit individual Poisson glms on.
+#' @param regions Character vector indicating regions to fit individual Poisson glms on. If "all",
+#' defaults to all regions in the appropriate dataset in model.
 #' @param adj Numeric vector indicating an adjustment of PM2.5 not attributable to coal EGUs.
-#' It should have the same length as the number of rows in model$matched, with each
-#' element corresponding to the relevant zip code in model$matched.
+#' It should have the same length as the number of rows in model$matched or model$raw, with each
+#' element corresponding to the relevant zip code in model$matched or model$raw.
 #' @param do.effect Boolean. If TRUE, the plot returned shows the estimated effects for
 #' each region along with a 95% confidence interval. If FALSE, the returned plot is
 #' a boxplot of regional IHD outcomes
@@ -30,7 +32,6 @@ plotOutcome <- function(model, outcome, regions="all", adj = NULL, do.effect = T
   # extract correct dataset
   dataset <- switch(analysis.type, stratified = model$raw, matched = model$matched)
 
-  browser()
   if(do.effect){
     # fit regional outcome models (what if user says 'all') and extract IRRs
     # NEED TO IMPLEMENT 'adj'
