@@ -39,6 +39,14 @@ plotOutcome <- function(model, outcome, regions="all", adj = NULL, do.effect = T
       # get all unique regions
       regions <- unique(dataset$region)
     }
+
+    # check edge case: if a region contains only treated or control zips, remove from
+    # effect analysis
+    ok <- sapply(regions, function(r){
+            return( length(unique(dataset[region==r][["High"]])) > 1 )
+    }, simplify = T)
+    regions <- regions[ok]
+
     out.mods <- sapply(regions, function(r){
       m <- fitOutcomeModel(dataset=dataset[region==r], outcome = outcome,
                            covariate.vars = names(dataset)[c(7:17,19:23)],
