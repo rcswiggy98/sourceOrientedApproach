@@ -2,6 +2,7 @@ source('./R/analyzeMatches.R')
 source('./R/plotMatches.R')
 source('./R/createSMDplot.R')
 source('./R/createConfMat.R')
+source('./R/plotOutcome.R')
 library(data.table)
 library(shiny)
 
@@ -9,13 +10,21 @@ library(shiny)
 states <- readLines("./data/states.txt")
 states[51] <- "All"
 states <- as.list(states)
-load('data/cmaqddm2005.RData')
-cmaqddm2005 <- as.data.table(cmaqddm2005)
-cmaqddm2005 <- cmaqddm2005[, .(zip=ZIP, Exposure_DDM)]
-load('data/inmap2005.RData')
+load('./data/cmaqddm2005.RData')
+cmaqddm2005 <- as.data.table(cmaqddm2005)[, .(zip=ZIP, Exposure_DDM)]
+load('./data/inmap2005.RData')
 inmap2005 <- as.data.table(inmap2005)
-hyads2005 <- cmaqddm2005
+load('./data/hyads_raw_2005.RData')
+hyads2005 <- hyads_raw[, .(zip=ZIP, hyads)]
+rm(hyads_raw)
+load('./data/hyads_pm25_2005.RData')
+hyadspm2005 <- hyads_pm25[, .(zip=ZIP, hyads_pm25)]
+rm(hyads_pm25)
 load('data/covariates.RData')
+# SPECIFY outcome here
+load('data/medicare_sim2005.RData')
+outcome <- medicare_sim2005
+rm(medicare_sim2005)
 
 ui <- fluidPage(
   titlePanel("Exposure/matching vis"),
@@ -27,12 +36,11 @@ ui <- fluidPage(
       # pass to analyzeMatches after user clicks init button
       selectInput("match.method",
                   label = "Matching method",
-                  choices = list("nn", "stratified",
-                              "dapsm", "exact"),
+                  choices = list("nn", "stratified", "dapsm", "exact"),
                   selected = "nn"),
 
       # pass to analyzeMatches after user clicks init button
-      sliderInput("exposure.cutoff.percentile",
+      numericInput("exposure.cutoff.percentile",
                   label = "Exposure cutoff",
                   min = 0, max = 1, value = 0.8),
 
@@ -47,74 +55,82 @@ ui <- fluidPage(
                   min = 2, max = 25, value = 5, step=1),
 
       # pass to analyzeMatches after user clicks init button; all data needs to be loaded!
-      selectInput("exposure.var", label = "Exposure to plot matches for",
-                  choices = list("HyADS", "CMAQ", "INMAP"),
-                  selected = "CMAQ", width = NULL),
+      #selectInput("exposure.var", label = "Exposure to plot matches for",
+      #            choices = list("HyADS", "CMAQ", "INMAP"),
+      #            selected = "CMAQ", width = NULL),
 
-      # exposures to compare against (for confusion matrix plot)
-      checkboxGroupInput("exposure.vars.compare", label = "Exposures to compare against",
-                  choices = list("HyADS", "CMAQ", "INMAP"),
-                  selected = NULL, width = NULL),
+      checkboxGroupInput("stuff.to.plot", label = "Plots to include",
+                         choiceNames = list("Treatment map", "Confusion matrix",
+                                            "Exposure histogram", "SMD balance",
+                                            "Propensity histogram", "Outcome boxplot",
+                                            "Effect CIs"),
+                         choiceValues = list("treatment", "conf.mat",
+                                             "exp.hist", "smd", "prop.hist",
+                                             "outcome", "effect")
+                         ),
+
+      # exposures to compare
+      checkboxGroupInput("exposure.vars.compare", label = "Exposures to compare",
+                          choices = list("HyADS", "HyADSpm25", "CMAQ", "INMAP"),
+                          selected = "CMAQ", width = NULL),
 
       # pass to analyzeMatches, this will remove all units not in the given regions from
       # the matching process entirely
       checkboxGroupInput("region.match", label = "Regions to match units",
-                  choices = list("Northeast", "IndustrialMidwest", "Southeast",
-                                 "UpperMidwest", "Southwest", "SouthernCalifornia", "Northwest"),
-                  selected = list("Northeast", "IndustrialMidwest", "Southeast",
-                                  "UpperMidwest", "Southwest", "SouthernCalifornia", "Northwest"),
-                  width = NULL),
+                         choices = list("Northeast", "IndustrialMidwest", "Southeast",
+                                        "UpperMidwest", "Southwest", "SouthernCalifornia", "Northwest"),
+                         selected = list("Northeast", "IndustrialMidwest", "Southeast",
+                                         "UpperMidwest", "Southwest", "SouthernCalifornia", "Northwest"),
+                         width = NULL),
 
       helpText("Filter the plotted matched data using the options below, or use the legend/tools
                in the plot itself:"),
 
-      # these should automatically refresh as the user changes them
+      # ------------- these should automatically refresh as the user changes them -------------
       # show only those data in a given region
       selectInput("region", label = "Region",
-                         choices = list("All", "Northeast", "IndustrialMidwest", "Southeast",
-                                        "UpperMidwest", "Southwest", "SouthernCalifornia", "Northwest"),
-                         selected = "All", width = NULL),
+                  choices = list("All", "Northeast", "IndustrialMidwest", "Southeast",
+                                "UpperMidwest", "Southwest", "SouthernCalifornia", "Northwest"),
+                  selected = "All", width = NULL),
 
       # show only those data in a given state
-      selectInput("state", label = "State",
-                         choices = states,
-                         selected = "All", width = NULL),
+      selectInput("state", label = "State", choices = states,
+                  selected = "All", width = NULL),
 
       # show only control or treated data
       selectInput("subset", label = "Treatment",
-                         choices = list("Treated", "Control", "All"), selected = "Treated"),
+                  choices = list("Treated", "Control", "All"), selected = "Treated"),
 
       # last filter; of the remaining units, select only a subset of them, based on lat/long
       sliderInput("norm.long", "Normalized Longitude", min = 0, max = 1, value = c(0,1)),
       sliderInput("norm.lat", "Normalized Latitude", min = 0, max = 1, value = c(0,1))
     ),
 
-    # prompt the user for main exposure: static plot only.
-    # plot the secondary exposure as well.
-    # plot histograms of exposure by region.
-    # fit Outcome model and plot effect and boxplot per region
-    # propensity score distributions and confusion matrices at the end
+
     mainPanel(#plotly::plotlyOutput("map", height="50%"),
-              uiOutput("secondary.maps"),
+              uiOutput("treat.maps"),
               uiOutput("SMD"),
-              uiOutput("conf.mats"))
+              uiOutput("conf.mats"),
+              uiOutput("outcome"),
+              uiOutput("effect"))
   )
 )
 
 
 server <- function(input, output, session) {
   observeEvent(input$init, {
-    # get recompute parameters
+    #exposure <- switch (input$exposure.var,
+    #  "INMAP" = inmap2005,
+    #  "CMAQ" = cmaqddm2005,
+    #  "HyADS" = hyads2005,
+    #  "HyADSpm25" = hyadspm2005
+    #)
+
     match.method <- input$match.method
     is.stratified <- ifelse(match.method == "stratified", T, F)
     cutoff <- input$exposure.cutoff.percentile
     caliper.threshold <- input$caliper.threshold
     quantiles <- seq(0,1,1/input$n.prop.quantiles)
-    exposure <- switch (input$exposure.var,
-      "INMAP" = inmap2005,
-      "CMAQ" = cmaqddm2005,
-      "HyADS" = cmaqddm2005
-    )
     match.regions <- input$region.match
     filter.params <- list(region=input$region,
                           state=input$state,
@@ -122,28 +138,30 @@ server <- function(input, output, session) {
                           norm.long=input$norm.long,
                           norm.lat=input$norm.lat)
     # recompute
-    mm.out <- analyzeMatches(exposure=exposure, covariates=covariates, regions=match.regions,
-                             covariate.vars="all", exposure.cutoff.percentile=cutoff,
-                             match.method=match.method, caliper.type="default",
-                             caliper.threshold=caliper.threshold, quantiles=quantiles)
-    # compute different exposures to compare
-    output$conf.mats <- NULL
-    if(length(input$exposure.vars.compare) > 0){
-      # don't want to duplicate main exposure
-      exposure.vars.compare <- input$exposure.vars.compare[!input$exposure.vars.compare %in% c(input$exposure.var)]
-      exposure.vars.compare <- c(exposure.vars.compare, input$exposure.var)
-      exposures <- lapply(exposure.vars.compare,switch,CMAQ=cmaqddm2005,HyADS=cmaqddm2005,INMAP=inmap2005)
-      names(exposures) <- exposure.vars.compare
-      more.models <- sapply(exposures,
-                            function(x){return(analyzeMatches(exposure=x,covariates=covariates,
-                                                             regions=match.regions,covariate.vars="all",
-                                                             exposure.cutoff.percentile=cutoff,
-                                                             match.method=match.method, caliper.type="default",
-                                                             caliper.threshold=caliper.threshold,
-                                                             quantiles=quantiles)[c(1:4)])},
-                            simplify=F, USE.NAMES=T)
-      # plot additional exposure maps
-      output$secondary.maps <- renderUI({
+    #mm.out <- analyzeMatches(exposure=exposure, covariates=covariates, regions=match.regions,
+    #                         covariate.vars="all", exposure.cutoff.percentile=cutoff,
+    #                         match.method=match.method, caliper.type="default",
+    #                         caliper.threshold=caliper.threshold, quantiles=quantiles)
+
+    # do the compute to match the data given the selected exposures
+    exposure.vars.compare <- input$exposure.vars.compare
+    # add more exposures here
+    exposures <- lapply(exposure.vars.compare, switch,
+                        CMAQ=cmaqddm2005,HyADS=hyads2005,HyADSpm25=hyadspm2005,INMAP=inmap2005)
+    names(exposures) <- exposure.vars.compare
+    more.models <- sapply(exposures,
+                          function(x){
+                            return(analyzeMatches(exposure=x,covariates=covariates,
+                                                  regions=match.regions,covariate.vars="all",
+                                                  exposure.cutoff.percentile=cutoff,
+                                                  match.method=match.method,caliper.type="default",
+                                                  caliper.threshold=caliper.threshold,
+                                                  quantiles=quantiles)[c(1:4)])},
+                          simplify=F, USE.NAMES=T)
+
+    # make the treated/control maps
+    if("treatment" %in% input$stuff.to.plot){
+      output$treat.maps <- renderUI({
         maps.list <- lapply(1:length(more.models), function(i){
           name <- paste("map",i,sep="")
           plotlyOutput(name)#, width = paste(100/length(more.models), "%", sep=""))
@@ -163,9 +181,15 @@ server <- function(input, output, session) {
           })
         })
       }
+    } else {
+      output$treat.maps <- NULL
+    }
 
-      # plot the confusion matrices
-      mats.to.plot <- createConfMat(more.models, ground.truth = input$exposure.var)
+
+    # plot the confusion matrices
+    # TODO: specify ground truth?? Cannot compare all combinations
+    if("conf.mat" %in% input$stuff.to.plot){
+      mats.to.plot <- createConfMat(more.models, ground.truth = input$exposure.vars.compare[1])
       output$conf.mats <- renderUI({
         plot.output.list <- lapply(1:length(more.models), function(i){
           name <- paste("plot", i, sep="")
@@ -180,48 +204,89 @@ server <- function(input, output, session) {
           output[[plotname]] <- renderTable(mats.to.plot[[idx]]$table, rownames = T, colnames = T)
         })
       }
+    } else {
+      output$conf.mats <- NULL
     }
 
     # make the SMD balance plots
-    # output$SMD <- NULL
-    output$SMD <- renderUI({
-      smd.list <- lapply(1:length(more.models), function(i){
-        name <- paste("smd", i, sep="")
-        plotOutput(name)#, width = paste(95/length(mats.to.plot),"%", sep=""))
+    if("smd" %in% input$stuff.to.plot){
+      output$SMD <- renderUI({
+        smd.list <- lapply(1:length(more.models), function(i){
+          name <- paste("smd", i, sep="")
+          plotOutput(name)#, width = paste(95/length(mats.to.plot),"%", sep=""))
+        })
+        do.call(tagList, smd.list)
       })
-      do.call(tagList, smd.list)
-    })
-    for(i in 1:length(more.models)) {
-      local({
-        idx <- i
-        plotname <- paste("smd",i,sep="")
-        if(!is.stratified){
-          output[[plotname]] <- renderPlot({
-            createSMDplot(more.models[[idx]]$match.model, name=names(more.models)[idx])
-          })
-        }
-        else {
-          # get matched and raw datasets only from analyzeMatches
-          smds <- createStratSMD(models=more.models[idx])
-
-          output[[plotname]] <- renderPlot({
-            plotStratSMD(smds[[1]][[1]], smds[[2]][[1]], name=names(more.models)[idx])
-          })
-        }
-      })
+      for(i in 1:length(more.models)) {
+        local({
+          idx <- i
+          plotname <- paste("smd",idx,sep="")
+          if(!is.stratified){
+            output[[plotname]] <- renderPlot({
+              createSMDplot(more.models[[idx]]$match.model, name=names(more.models)[idx])
+            })
+          }
+          else {
+            # get matched and raw datasets only from analyzeMatches
+            smds <- createStratSMD(models=more.models[idx])
+            output[[plotname]] <- renderPlot({
+              plotStratSMD(smds[[1]][[1]], smds[[2]][[1]], name=names(more.models)[idx])
+            })
+          }
+        })
+      }
+    } else {
+      output$SMD <- NULL
     }
 
-    # make the outcome model plots and the estimated IRRs for the given cutoff
+    # make the outcome boxplots
+    if("outcome" %in% input$stuff.to.plot){
+      output$outcome <- renderUI({
+        outcome.list <- lapply(1:length(more.models), function(i){
+          name <- paste("outcome", i, sep="")
+          plotOutput(name, width = "50%")#, width = paste(95/length(mats.to.plot),"%", sep=""))
+        })
+        do.call(tagList, outcome.list)
+      })
+      for(i in 1:length(more.models)) {
+        local({
+          idx <- i
+          plotname <- paste("outcome",idx,sep="")
+          output[[plotname]] <- renderPlot(
+            plotOutcome(more.models[[idx]], outcome, do.effect = F, name=names(more.models)[idx])
+          )
+        })
+      }
+    } else {
+      output$outcome <- NULL
+    }
+
+    if("effect" %in% input$stuff.to.plot) {
+      # make the effect CIs
+      output$effect <- renderUI({
+        effect.list <- lapply(1:length(more.models), function(i){
+          name <- paste("effect", i, sep="")
+          plotOutput(name, width = "50%")#, width = paste(95/length(mats.to.plot),"%", sep=""))
+        })
+        do.call(tagList, effect.list)
+      })
+      for(i in 1:length(more.models)) {
+        local({
+          idx <- i
+          plotname <- paste("effect",idx,sep="")
+          output[[plotname]] <- renderPlot(
+            plotOutcome(more.models[[idx]], outcome, regions=match.regions,
+                        do.effect = T, name=names(more.models)[idx])
+          )
+        })
+      }
+    } else {
+      output$effect <- NULL
+    }
+
 
     # make the propensity score histograms
-
-    # just compute the exposures for all 3 and let the user shift between them?
-    #output$map <- plotly::renderPlotly({
-    #  plotMatches(data=mm.out$matched,pairs=mm.out$pairs,filters=filter.params,stratified=is.stratified)
-    #})
   })
 }
 
 shinyApp(ui, server)
-
-# difference in casual effect?

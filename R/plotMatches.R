@@ -5,6 +5,7 @@
 #' @param stratified TRUE/FALSE. If this is stratified matching. \code{add.exposure}
 #' @param filters A list of parameters to pass to analyzeMatchesUI to do map filtering \code{filters}
 #' @param plotname Name of the plot to be displayed as title \code{plotname}
+#' @return NA
 #' @export
 plotMatches <- function(data, pairs, filters = list(),
                         stratified = F, plotname="plot"){
@@ -67,10 +68,9 @@ plotMatches <- function(data, pairs, filters = list(),
     # read output from analyzeMatches
     zips.treated <- data[High==1, .(zip, Latitude, Longitude, region, High)]
     zips.control <- data[High==0, .(zip, Latitude, Longitude, region, High)]
-    #adding col in place, FIX THIS!
     pairs[, id := seq_len(nrow(pairs))]
   }
-  # map projection
+
   geo <- list(
     scope = 'usa',
     projection = list(type = 'albers usa'),
@@ -127,6 +127,7 @@ plotMatches <- function(data, pairs, filters = list(),
       )
     }
   }
+  # draw lines for eached matched pair
   if(!stratified){
     # just color the strata
     fig <- fig %>% add_segments(

@@ -1,3 +1,7 @@
+#' Gets matched data
+#'
+#' This method returns matched data to be passed primarily into analyzeMatchesUI.
+#'
 #' @param exposure A data table.  The first column must be the unit identifier
 #' (for example, 5-digit U.S. zip code)
 #' and the second column is the exposure of interest \code{exposure}
@@ -15,9 +19,23 @@
 #' @param exposure.cutoff.percentile A numeric value between 0 and 1 specifying the
 #' cutoff, in terms of percentile of the exposure distribution, between high exposed
 #' and controls locations.
-#' @param caliper A numeric value specifying the maximum allowable difference
+#' @param match.method One of "nn", "stratified", "dapsm", "exact".
+#' @param caliper.type Type of caliper (abs distance, Mahlanobis, etc.) to use in matching.
+#' Defaults to \code{caliper.threshold}% of the difference in the logits of propensity scores * pooled sdev.
+#' @param caliper.threshold A numeric value specifying the maximum allowable difference
 #' in propensity scores when performing matching
-#' @param  ... additional matching parameters to be passed to the matchit method
+#' @param quantiles When match.method == "stratified", a numeric vector marking quantiles for the
+#' strata
+#' @param do.pairs Boolean indicating whether to return a data.table containing rows consisting of
+#' zips and coordinates of matched pairs
+#' @param  ... additional matching parameters to be passed to matchit()
+#'
+#' @return A list containing the raw dataset, the matched dataset, the model object returned from
+#' the relevant matchit() call, if any, a pairs data.table containing coordinates of matched locations,
+#' the caliper computed for bounds in propensity scores, the cutoff dichotomizing exposure in terms of the
+#' units in the 2nd column of \code{exposure}, and a data.table summarizing locations dropped/retained in matching.
+#'
+#' @export
 analyzeMatches <- function(exposure, covariates, covariate.vars, regions = "all",
                           exact.vars = NULL, exposure.cutoff.percentile = 0.80,
                           match.method = "nn", caliper.type = "default",
@@ -72,10 +90,11 @@ analyzeMatches <- function(exposure, covariates, covariate.vars, regions = "all"
     } else{
       print("Invalid region selected...proceeding with all.")
     }
-  }
-  # remove regional covariate if there is only one region
-  if(length(regions)<=2){
-    covariate.vars <- covariate.vars[!covariate.vars %in% c("region")]
+
+    # remove regional covariate if there is only one region
+    if(length(regions)<=2){
+      covariate.vars <- covariate.vars[!covariate.vars %in% c("region")]
+    }
   }
 
   # get propensity scores from logistic regression
@@ -85,8 +104,6 @@ analyzeMatches <- function(exposure, covariates, covariate.vars, regions = "all"
 
   # dataset w/prop.scores before matching
   dataset.raw <- dataset
-  # add an index temporarily for joining matched zips
-  #dataset[, idx := seq_len(nrow(dataset))]
 
   # -------- DO THE MATCHING -------------------
   # MatchIt's docs https://r.iq.harvard.edu/docs/matchit/2.4-20/_TT_matchit_TT__Implem.html
