@@ -62,7 +62,7 @@ fitOutcomeModel <- function(dataset, outcome, covariate.vars, outcome.var = "IHD
 
     #Find PS quantiles and stratify into 5 groups
     PS_quantiles <- quantile(dataset$prop.scores, c(0.20,0.40,0.60,0.80))
-    dataset$PS_group <- findInterval(dataset$prop.scores, PS_quantiles)
+    dataset$PS_group <- as.factor(findInterval(dataset$prop.scores, PS_quantiles))
 
     outcome.formula <- as.formula(paste(outcome.var, "~ High +",paste(c(covariate.vars,"PS_group"),collapse = " + ")))
   }

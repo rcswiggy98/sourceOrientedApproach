@@ -161,7 +161,7 @@ analyzeMatches <- function(exposure, covariates, covariate.vars, regions = "all"
 
     PS_quantiles <- quantile(dataset$prop.scores, probs=.q)
     # label the prop scores with their quantile
-    dataset$PS_group <- findInterval(dataset$prop.scores, PS_quantiles, all.inside = T)
+    dataset$PS_group <- as.factor(findInterval(dataset$prop.scores, PS_quantiles, all.inside = T))
     dataset.matched <- dataset
     summary <- NULL
     matched.model <- NULL

@@ -1,8 +1,11 @@
 source('./R/analyzeMatches.R')
 source('./R/plotMatches.R')
 source('./R/createSMDplot.R')
+source('./R/createStratSMD.R')
 source('./R/createConfMat.R')
 source('./R/plotOutcome.R')
+source('./R/plotStratSMD.R')
+source('./R/plotPropensityScoreHistogram2.R')
 library(data.table)
 library(shiny)
 
@@ -106,8 +109,9 @@ ui <- fluidPage(
     ),
 
 
-    mainPanel(#plotly::plotlyOutput("map", height="50%"),
+    mainPanel(uiOutput("exp.hists"),
               uiOutput("treat.maps"),
+              uiOutput("prop.hists"),
               uiOutput("SMD"),
               uiOutput("conf.mats"),
               uiOutput("outcome"),
@@ -145,7 +149,9 @@ server <- function(input, output, session) {
     # do the compute to match the data given the selected exposures
     exposure.vars.compare <- unique(c(input$exposure.vars.compare, input$exposure.var))
     # make sure input$exposure is also included, but not duplicated
+    exposure.vars.input <- input$exposure.vars.compare
 
+    # make this reactive to the matching parameters ONLY, not the plots, to avoid recomputing
     # add more exposures here
     exposures <- lapply(exposure.vars.compare, switch,
                         CMAQ=cmaqddm2005,HyADS=hyads2005,HyADSpm25=hyadspm2005,INMAP=inmap2005)
@@ -157,8 +163,34 @@ server <- function(input, output, session) {
                                                   exposure.cutoff.percentile=cutoff,
                                                   match.method=match.method,caliper.type="default",
                                                   caliper.threshold=caliper.threshold,
-                                                  quantiles=quantiles)[c(1:4)])},
+                                                  quantiles=quantiles))},
                           simplify=F, USE.NAMES=T)
+
+    # make regional exposure histograms
+    if("exp.hist" %in% input$stuff.to.plot){
+      output$exp.hists <- renderUI({
+        maps.list <- lapply(1:length(more.models), function(i){
+          name <- paste("exphist",i,sep="")
+          plotOutput(name)
+        })
+        do.call(tagList, maps.list)
+      })
+      for(i in 1:length(more.models)){
+        local({
+          idx <- i
+          plotname <- paste("exphist", idx, sep = "")
+          m <- more.models[[idx]]
+          n <- names(more.models)[idx]
+          cutoff <- formatC(signif(m$cutoff[[1]], digits = 3), format="e")
+          title <- paste("Exposure histogram for ", n, " (cutoff : ", cutoff, ")", sep = "")
+          output[[plotname]] <- renderPlot({
+            plotExposureHistogram(m, title)
+          })
+        })
+      }
+    } else {
+      output$exp.hists <- NULL
+    }
 
     # make the treated/control maps
     if("treatment" %in% input$stuff.to.plot){
@@ -186,9 +218,7 @@ server <- function(input, output, session) {
       output$treat.maps <- NULL
     }
 
-
     # plot the confusion matrices
-    # TODO: specify ground truth?? Cannot compare all combinations
     if("conf.mat" %in% input$stuff.to.plot){
       mats.to.plot <- createConfMat(more.models, ground.truth = input$exposure.var)
       output$conf.mats <- renderUI({
@@ -202,6 +232,7 @@ server <- function(input, output, session) {
         local({
           idx <- i
           plotname <- paste("plot", idx, sep = "")
+          # figure out how many zips are included in a dataset but not the other
           drops <- mats.to.plot[[idx]][[2]]
           msg <- ifelse(drops < 0,
                         paste("Removed", drops, "zips from", input$exposure.var, "raw data"),
@@ -268,12 +299,12 @@ server <- function(input, output, session) {
       output$outcome <- NULL
     }
 
+    # make the effect CIs
     if("effect" %in% input$stuff.to.plot) {
-      # make the effect CIs
       output$effect <- renderUI({
         effect.list <- lapply(1:length(more.models), function(i){
           name <- paste("effect", i, sep="")
-          plotOutput(name, width = "50%")#, width = paste(95/length(mats.to.plot),"%", sep=""))
+          plotOutput(name, width = "66%")#, width = paste(95/length(mats.to.plot),"%", sep=""))
         })
         do.call(tagList, effect.list)
       })
@@ -291,8 +322,30 @@ server <- function(input, output, session) {
       output$effect <- NULL
     }
 
-
     # make the propensity score histograms
+    if("prop.hist" %in% input$stuff.to.plot) {
+      output$prop.hists <- renderUI({
+        effect.list <- lapply(1:length(more.models), function(i){
+          name <- paste("phist", i, sep="")
+          plotOutput(name, width = "66%")
+        })
+        do.call(tagList, effect.list)
+      })
+      for(i in 1:length(more.models)) {
+        local({
+          idx <- i
+          plotname <- paste("phist",idx,sep="")
+          output[[plotname]] <- renderPlot({
+            title <- paste("Propensity scores for ", names(more.models)[idx], sep="")
+            plotPropensityScoreHistogram2(more.models[[idx]], title)
+          })
+        })
+      }
+    } else {
+      output$prop.hists <- NULL
+    }
+
+
   })
 }
 
