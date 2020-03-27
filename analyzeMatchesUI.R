@@ -8,6 +8,7 @@ source('./R/plotStratSMD.R')
 source('./R/plotPropensityScoreHistogram2.R')
 library(data.table)
 library(shiny)
+library(plotly)
 
 # read in data before looping server
 states <- readLines("./data/states.txt")
@@ -221,26 +222,29 @@ server <- function(input, output, session) {
     # plot the confusion matrices
     if("conf.mat" %in% input$stuff.to.plot){
       mats.to.plot <- createConfMat(more.models, ground.truth = input$exposure.var)
-      output$conf.mats <- renderUI({
-        plot.output.list <- lapply(1:length(more.models), function(i){
-          name <- paste("plot", i, sep="")
-          tableOutput(name)#, width = paste(95/length(mats.to.plot),"%", sep=""))
+      if (length(mats.to.plot) > 0) {
+        output$conf.mats <- renderUI({
+          plot.output.list <- lapply(1:length(more.models), function(i){
+            name <- paste("plot", i, sep="")
+            tableOutput(name)#, width = paste(95/length(mats.to.plot),"%", sep=""))
+          })
+          do.call(tagList, plot.output.list)
         })
-        do.call(tagList, plot.output.list)
-      })
-      for(i in 1:length(mats.to.plot)){
-        local({
-          idx <- i
-          plotname <- paste("plot", idx, sep = "")
-          # figure out how many zips are included in a dataset but not the other
-          drops <- mats.to.plot[[idx]][[2]]
-          msg <- ifelse(drops < 0,
-                        paste("Removed", drops, "zips from", input$exposure.var, "raw data"),
-                        paste("Removed", drops, "zips from", names(more.models)[idx], "raw data"))
-          output[[plotname]] <- renderTable(mats.to.plot[[idx]][[1]]$table, rownames=T,
-                                            colnames = T,
-                                            caption = msg)
-        })
+        for(i in 1:length(mats.to.plot)){
+          local({
+            idx <- i
+            plotname <- paste("plot", idx, sep = "")
+            # figure out how many zips are included in a dataset but not the other
+            browser()
+            drops <- mats.to.plot[[idx]][[2]]
+            msg <- ifelse(drops < 0,
+                          paste("Removed", drops, "zips from", input$exposure.var, "raw data"),
+                          paste("Removed", drops, "zips from", names(mats.to.plot)[idx], "raw data"))
+            output[[plotname]] <- renderTable(mats.to.plot[[idx]][[1]]$table, rownames=T,
+                                              colnames = T,
+                                              caption = msg)
+          })
+        }
       }
     } else {
       output$conf.mats <- NULL
