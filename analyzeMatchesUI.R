@@ -6,6 +6,7 @@ source('./R/createConfMat.R')
 source('./R/plotOutcome.R')
 source('./R/plotStratSMD.R')
 source('./R/plotPropensityScoreHistogram2.R')
+source('./R/plotExposureHistogram.R')
 library(data.table)
 library(shiny)
 library(plotly)
@@ -64,7 +65,7 @@ ui <- fluidPage(
 
       checkboxGroupInput("stuff.to.plot", label = "Plots to include",
                          choiceNames = list("Treatment map", "Confusion matrix",
-                                            "Exposure histogram", "SMD balance",
+                                            "Exposure histogram (raw data)", "SMD balance",
                                             "Propensity histogram", "Outcome boxplot",
                                             "Effect CIs"),
                          choiceValues = list("treatment", "conf.mat",
@@ -86,7 +87,7 @@ ui <- fluidPage(
                                          "UpperMidwest", "Southwest", "SouthernCalifornia", "Northwest"),
                          width = NULL),
 
-      helpText("Filter the plotted matched data using the options below, or use the legend/tools
+      helpText("Filter the maps of matched data using the options below, or use the legend/tools
                in the plot itself:"),
 
       # ------------- these should automatically refresh as the user changes them -------------
@@ -235,14 +236,14 @@ server <- function(input, output, session) {
             idx <- i
             plotname <- paste("plot", idx, sep = "")
             # figure out how many zips are included in a dataset but not the other
-            browser()
             drops <- mats.to.plot[[idx]][[2]]
             msg <- ifelse(drops < 0,
                           paste("Removed", drops, "zips from", input$exposure.var, "raw data"),
                           paste("Removed", drops, "zips from", names(mats.to.plot)[idx], "raw data"))
+            acc <- paste(100*signif(mats.to.plot[[idx]][[1]]$overall[1], digits=3), "% agreement in classification", sep = "")
             output[[plotname]] <- renderTable(mats.to.plot[[idx]][[1]]$table, rownames=T,
                                               colnames = T,
-                                              caption = msg)
+                                              caption = paste(msg, acc))
           })
         }
       }
