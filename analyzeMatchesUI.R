@@ -11,10 +11,13 @@ library(data.table)
 library(shiny)
 library(plotly)
 
-# read in data before looping server
+# --------------- read in data before looping server -----------------
 states <- readLines("./data/states.txt")
 states[51] <- "All"
 states <- as.list(states)
+
+# Load all exposures here, the names need to match the names defined in the list "exposures",
+# the zip code column should be named "zip"
 load('./data/cmaqddm2005.RData')
 cmaqddm2005 <- as.data.table(cmaqddm2005)[, .(zip=ZIP, Exposure_DDM)]
 load('./data/inmap2005.RData')
@@ -25,11 +28,16 @@ rm(hyads_raw)
 load('./data/hyads_pm25_2005.RData')
 hyadspm2005 <- hyads_pm25[, .(zip=ZIP, hyads_pm25)]
 rm(hyads_pm25)
+
+# Load covariates, rename to 'covariates'
 load('data/covariates.RData')
-# SPECIFY outcome here
+
+# Load outcome here, rename to 'outcome'
 load('data/medicare_sim2005.RData')
 outcome <- medicare_sim2005
 rm(medicare_sim2005)
+
+# ------------------------------------------------------------------------------------
 
 ui <- fluidPage(
   titlePanel("Exposure/matching vis"),
@@ -46,8 +54,8 @@ ui <- fluidPage(
 
       # pass to analyzeMatches after user clicks init button
       numericInput("exposure.cutoff.percentile",
-                  label = "Exposure cutoff",
-                  min = 0, max = 1, value = 0.8),
+                  label = "Exposure cutoff (percentile)",
+                  min = 0, max = 1, value = 0.8, step=0.025),
 
       # pass to analyzeMatches after user clicks init button
       sliderInput("caliper.threshold",
@@ -59,7 +67,7 @@ ui <- fluidPage(
                   label = "# of strata (for stratified matching only)",
                   min = 2, max = 25, value = 5, step=1),
 
-      selectInput("exposure.var", label = "Exposure to compare against (for confusion matrix only)",
+      selectInput("exposure.var", label = "Reference exposure (for confusion matrix only)",
                   choices = list("HyADS", "HyADSpm25", "CMAQ", "INMAP"),
                   selected = "CMAQ", width = NULL),
 
@@ -124,13 +132,6 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   observeEvent(input$init, {
-    #exposure <- switch (input$exposure.var,
-    #  "INMAP" = inmap2005,
-    #  "CMAQ" = cmaqddm2005,
-    #  "HyADS" = hyads2005,
-    #  "HyADSpm25" = hyadspm2005
-    #)
-
     match.method <- input$match.method
     is.stratified <- ifelse(match.method == "stratified", T, F)
     cutoff <- input$exposure.cutoff.percentile
@@ -142,22 +143,17 @@ server <- function(input, output, session) {
                           subset=input$subset,
                           norm.long=input$norm.long,
                           norm.lat=input$norm.lat)
-    # recompute
-    #mm.out <- analyzeMatches(exposure=exposure, covariates=covariates, regions=match.regions,
-    #                         covariate.vars="all", exposure.cutoff.percentile=cutoff,
-    #                         match.method=match.method, caliper.type="default",
-    #                         caliper.threshold=caliper.threshold, quantiles=quantiles)
 
-    # do the compute to match the data given the selected exposures
-    exposure.vars.compare <- unique(c(input$exposure.vars.compare, input$exposure.var))
-    # make sure input$exposure is also included, but not duplicated
-    exposure.vars.input <- input$exposure.vars.compare
+    exposure.vars.compare <- input$exposure.vars.compare
+    # ground truth for confusion matrices
+    exposure.var.confmat <- input$exposure.var
 
-    # make this reactive to the matching parameters ONLY, not the plots, to avoid recomputing
-    # add more exposures here
+    # ---- **** add more exposures here **** -----
     exposures <- lapply(exposure.vars.compare, switch,
                         CMAQ=cmaqddm2005,HyADS=hyads2005,HyADSpm25=hyadspm2005,INMAP=inmap2005)
     names(exposures) <- exposure.vars.compare
+
+    # make this reactive to the matching parameters ONLY, not the plots, to avoid recomputing
     more.models <- sapply(exposures,
                           function(x){
                             return(analyzeMatches(exposure=x,covariates=covariates,
@@ -220,14 +216,29 @@ server <- function(input, output, session) {
       output$treat.maps <- NULL
     }
 
-    # plot the confusion matrices
+    # make the confusion matrices
     if("conf.mat" %in% input$stuff.to.plot){
-      mats.to.plot <- createConfMat(more.models, ground.truth = input$exposure.var)
+      # if matches for ground truth exposure not computed, get them now
+      m <- list()
+      if(!exposure.var.confmat %in% exposure.vars.compare){
+        # ---- **** add more exposures here **** -----
+        exposure.confmat <- switch(exposure.var.confmat,
+                                   CMAQ=cmaqddm2005,HyADS=hyads2005,HyADSpm25=hyadspm2005,INMAP=inmap2005)
+        m.out <- analyzeMatches(exposure=exposure.confmat,covariates=covariates,regions=match.regions,
+                                covariate.vars="all",exposure.cutoff.percentile=cutoff,match.method=match.method,
+                                caliper.type="default",
+                                caliper.threshold=caliper.threshold,quantiles=quantiles)
+        m <- list(m.out)
+        names(m) <- c(exposure.var.confmat)
+      }
+      all.models <- c(more.models, m)
+      # make them!
+      mats.to.plot <- createConfMat(all.models, ground.truth = exposure.var.confmat)
       if (length(mats.to.plot) > 0) {
         output$conf.mats <- renderUI({
-          plot.output.list <- lapply(1:length(more.models), function(i){
+          plot.output.list <- lapply(1:length(mats.to.plot), function(i){
             name <- paste("plot", i, sep="")
-            tableOutput(name)#, width = paste(95/length(mats.to.plot),"%", sep=""))
+            tableOutput(name)
           })
           do.call(tagList, plot.output.list)
         })
@@ -349,9 +360,6 @@ server <- function(input, output, session) {
     } else {
       output$prop.hists <- NULL
     }
-
-
   })
 }
-
 shinyApp(ui, server)

@@ -1,6 +1,6 @@
-#' Gets matched data
-#'
-#' This method returns matched data to be passed primarily into analyzeMatchesUI.
+##' Gets matched data
+##'
+##' This method returns matched data to be passed primarily into analyzeMatchesUI.
 #'
 #' @param exposure A data table.  The first column must be the unit identifier
 #' (for example, 5-digit U.S. zip code)

@@ -13,7 +13,10 @@
 #' @param do.effect Boolean. If TRUE, the plot returned shows the estimated effects for
 #' each region along with a 95% confidence interval. If FALSE, the returned plot is
 #' a boxplot of regional IHD outcomes.
-#' @param do.sens.analy Do sensitivity analysis? (Not implemented)
+#' @param do.sens.analy Do sensitivity analysis? If do.effect = T, and not stratified,
+#' then this method calls analyzeMatches on the fly, computes the exposure for different cutoffs,
+#' and plots the relevant confidence intervals for each cutoff.
+#' (TODO, Not implemented yet)
 #' @param outcome.var Outcome variable. Should be a column in \code{outcome}.
 #' @param offset.var Offset for a Poisson regression. Should be a column in \code{outcome}.
 #' @param name Name of the plot.
@@ -82,7 +85,7 @@ plotOutcome <- function(model, outcome, regions="all", adj = NULL, do.effect = T
       dt <- transpose(do.call(data.table, effects))
       names(dt) <- c("IRR", "L", "R", "region", "PS_group")
       dt <- dt[, .(IRR=as.numeric(IRR), L=as.numeric(L), R=as.numeric(R), region, PS_group)]
-      pd <- position_dodge(0.75)
+      pd <- position_dodge(0.4)
       p <- ggplot(dt, aes(x=PS_group, y=IRR, color=region, group=region)) + geom_point(position=pd) +
         geom_errorbar(aes(ymin=L, ymax=R), width=.2,
                       position=pd) + ylim(0, 2) + ggtitle(name)
@@ -99,7 +102,14 @@ plotOutcome <- function(model, outcome, regions="all", adj = NULL, do.effect = T
       effects <- sapply(1:length(out.mods), function(i){
         m <- out.mods[[i]]
         r <- names(out.mods)[i]
+
+        if(nrow(m$model) == 0) return(c(NA, NA, NA, r))
+
         irr <- exp(coef(m)["High"])
+        # remove blowups
+        if(is.na(irr)) return(c(NA, NA, NA, r))
+        if(irr > 5) return(c(NA, NA, NA, r))
+
         ci <- exp(confint.default(m, "High", level=0.95))
         return(c(irr, ci, r))
       }, simplify = F)
